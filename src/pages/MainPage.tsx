@@ -1,32 +1,87 @@
 import main_items from '../assets/main-items.jpg';
+import main_items_webp from '../assets/main-items.webp';
 import main_parts from '../assets/main-parts.jpg';
+import main_parts_webp from '../assets/main-parts.webp';
 import main_styles from '../assets/main-styles.jpg';
+import main_styles_webp from '../assets/main-styles.webp';
+
 import main1 from '../assets/main1.jpg';
+import main1_webp from '../assets/main1.webp';
 import main2 from '../assets/main2.jpg';
+import main2_webp from '../assets/main2.webp';
 import main3 from '../assets/main3.jpg';
+import main3_webp from '../assets/main3.webp';
+
 import { Card } from '../components/Card';
 
+import { useEffect, useRef } from 'react';
 import { BannerVideo } from '../components/BannerVideo';
 import { Meta } from '../components/Meta';
 import ThreeColumns from '../components/ThreeColumns';
 import TwoColumns from '../components/TwoColumns';
 
 const MainPage = () => {
+  const imgRef1 = useRef<HTMLImageElement | null>(null);
+  const imgRef2 = useRef<HTMLImageElement | null>(null);
+  const imgRef3 = useRef<HTMLImageElement | null>(null);
+
+  useEffect(() => {
+    const options: IntersectionObserverInit = {};
+    const callback: IntersectionObserverCallback = (entries, observer) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          const target = entry.target as HTMLImageElement;
+          if (target.dataset.src) {
+            target.src = target.dataset.src;
+            if (
+              target.previousSibling instanceof HTMLSourceElement &&
+              target.previousSibling.dataset.srcset
+            ) {
+              console.log('intersecting', target.previousSibling.dataset.srcset);
+              // 수정된 타입 가드
+              (target.previousSibling as HTMLSourceElement).srcset =
+                target.previousSibling.dataset.srcset;
+            }
+            observer.unobserve(target);
+          }
+        }
+      });
+    };
+
+    const observer = new IntersectionObserver(callback, options);
+
+    if (!imgRef1.current || !imgRef2.current || !imgRef3.current) {
+      return;
+    }
+    observer.observe(imgRef1.current);
+    observer.observe(imgRef2.current);
+    observer.observe(imgRef3.current);
+    return () => observer.disconnect();
+  }, []);
   return (
     <div className="MainPage -mt-16">
       <BannerVideo />
       <div className="mx-auto">
         <ThreeColumns
           columns={[
-            <Card image={main1}>롱보드는 아주 재밌습니다.</Card>,
-            <Card image={main2}>롱보드를 타면 아주 신납니다.</Card>,
-            <Card image={main3}>롱보드는 굉장히 재밌습니다.</Card>,
+            <Card image={main1} webp={main1_webp}>
+              롱보드는 아주 재밌습니다.
+            </Card>,
+            <Card image={main2} webp={main2_webp}>
+              롱보드를 타면 아주 신납니다.
+            </Card>,
+            <Card image={main3} webp={main3_webp}>
+              롱보드는 굉장히 재밌습니다.
+            </Card>,
           ]}
         />
         <TwoColumns
           bgColor={'#f4f4f4'}
           columns={[
-            <img src={main_items} alt="mains" />,
+            <picture>
+              <source data-srcset={main_items_webp} type="image/webp" />
+              <img data-src={main_items} alt="mains" ref={imgRef1} />,
+            </picture>,
             <Meta
               title={'Items'}
               content={
@@ -46,14 +101,20 @@ const MainPage = () => {
               }
               btnLink={'/part'}
             />,
-            <img src={main_parts} />,
+            <picture>
+              <source data-srcset={main_parts_webp} type="image/webp" />
+              <img data-src={main_parts} alt="main-part" ref={imgRef2} />,
+            </picture>,
           ]}
           mobileReverse={true}
         />
         <TwoColumns
           bgColor={'#f4f4f4'}
           columns={[
-            <img src={main_styles} />,
+            <picture>
+              <source data-srcset={main_styles_webp} type="image/webp" />
+              <img data-src={main_styles} ref={imgRef3} alt="main-style" />
+            </picture>,
             <Meta
               title={'Riding Styles'}
               content={
